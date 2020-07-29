@@ -85,6 +85,7 @@ class Auth0AuthIntegration extends AbstractSsoServiceIntegration
         return 'https://' . $this->keys['domain'] . '/oauth/token';
     }
 
+
     /**
      * @return bool
      */
@@ -197,7 +198,8 @@ class Auth0AuthIntegration extends AbstractSsoServiceIntegration
                     'grant_type' => 'client_credentials',
                     'client_id' => $this->keys['client_id'],
                     'client_secret' => $this->keys['client_secret'],
-                    'audience' => 'https://' . rtrim($this->keys['domain'], '/') . '/' . trim($this->keys['audience'], '/') . '/'
+                    'audience' => 'https://' . rtrim($this->keys['domain'], '/') . '/' . trim($this->keys['audience'],
+                            '/') . '/'
                 ],
                 'http_errors' => false,
             ]
@@ -239,7 +241,8 @@ class Auth0AuthIntegration extends AbstractSsoServiceIntegration
 
         // Find existing user
         try {
-            $mauticUser = $this->userProvider->loadUserByUsername($this->setValueFromAuth0User('auth0_username', 'email'));
+            $mauticUser = $this->userProvider->loadUserByUsername($this->setValueFromAuth0User('auth0_username',
+                'email'));
         } catch (\Exception $exception) {
             // No User found. Do nothing.
         }
@@ -263,16 +266,43 @@ class Auth0AuthIntegration extends AbstractSsoServiceIntegration
                 $this->getUserRole()
             );
 
+
+        $auth0admin = $this->setValueFromAuth0User('auth0_admin');
+        $auth0RoleMapping = $this->getRoleArray();
+
+
         $auth0Role = $this->setValueFromAuth0User('auth0_role');
+        if($this->coreParametersHelper->getParameter('multiple_roles')){
+            foreach ($auth0Role as $role){
+                if($auth0RoleMapping[$role]){
+                    $auth0Role = $auth0RoleMapping[$role];
+                }
+            }
+        }
+
+        $auth0Role = $auth0admin ? $auth0RoleMapping['admin'] : $auth0Role;
         if ($auth0Role) {
-            $roleRepository = $this->em->getRepository('MauticUserBundle:Role');
-            $mauticRole = $roleRepository->findOneBy(['id' => $auth0Role]);
+
+            $mauticRole = $this->em
+                ->getRepository('MauticUserBundle:Role')
+                ->findOneBy(['id' => $auth0Role]);
             if ($mauticRole) {
                 $mauticUser->setRole($mauticRole);
             }
         }
 
         return $mauticUser;
+    }
+
+    protected function getRoleArray()
+    {
+        $roleArray = [];
+        $roleMap = $this->coreParametersHelper->getParameter('rolemapping');
+        foreach ($roleMap as $roleMapItem) {
+            $result = explode('=>', $roleMapItem);
+            $roleArray[(string)$result[0]] = $result[1];
+        }
+        return $roleArray;
     }
 
     /**

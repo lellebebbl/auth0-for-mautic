@@ -174,13 +174,13 @@ class ConfigType extends AbstractType
                 'rolemapping',
                 'textarea',
                 [
-                    'label' => 'plugin.auth0.integration.type_label.rolemapping',
+                    'label' => 'plugin.auth0.integration.type_label.rolemapping', //todo translations
                     'label_attr' => [
                         'class' => 'control-label',
                     ],
                     'attr' => [
                         'class' => 'form-control',
-                        'tooltip' => 'plugin.auth0.integration.type_label.rolemapping.tooltip',
+                        'tooltip' => 'plugin.auth0.integration.type_label.rolemapping.tooltip',//todo translations
                         'rows' => 4,
                         'data-show-on' => '{"config_auth0config_multiple_roles_1":"checked"}',
                     ],
