@@ -12,10 +12,23 @@
 return [
     'name' => 'Auth0',
     'description' => 'Enables Auth0 login for users.',
-    'version' => '1.0.0',
+    'version' => '1.2.0',
     'author' => 'Florian Wessels',
-
+    'routes'      => [
+        'main'   => [],
+        'public' => [],
+        'api'    => [],
+    ],
     'services' => [
+        'other' => [
+            // Provides access to configured API keys, settings, field mapping, etc
+            'auth0.config'            => [
+                'class'     => \MauticPlugin\MauticAuth0Bundle\Integration\Config::class,
+                'arguments' => [
+                    'mautic.integrations.helper',
+                ],
+            ],
+        ],
         'events' => [
             'mautic.auth0.user.subscriber' => [
                 'class' => \MauticPlugin\MauticAuth0Bundle\EventListener\UserSubscriber::class,
@@ -33,6 +46,26 @@ return [
                 'alias' => 'auth0config',
             ],
         ],
+        'integrations' => [
+            // Basic definitions with name, display name and icon
+            'mautic.integration.auth0'               => [
+                'class' => \MauticPlugin\MauticAuth0Bundle\Integration\Auth0AuthIntegration::class,
+                'tags'  => [
+                    'mautic.integration',
+                    'mautic.basic_integration',
+                ],
+            ],
+            // Provides the form types to use for the configuration UI
+            'auth0.integration.configuration' => [
+                'class'     => \MauticPlugin\MauticAuth0Bundle\Integration\Support\ConfigSupport::class,
+                'arguments' => [
+                    'helloworld.sync.repository.fields',
+                ],
+                'tags'      => [
+                    'mautic.config_integration',
+                ],
+            ],
+        ]
     ],
 
     'parameters' => [
